@@ -21,7 +21,7 @@ public class NlpService {
 		InputStream modelInParse = null;
 		try {
 			//load chunking model
-			modelInParse = new FileInputStream("en-parser-chunking.bin"); //from http://opennlp.sourceforge.net/models-1.5/
+			modelInParse = new FileInputStream("/config/en-parser-chunking.bin"); //from http://opennlp.sourceforge.net/models-1.5/
 			ParserModel model = new ParserModel(modelInParse);
 			
 			//create parse tree
