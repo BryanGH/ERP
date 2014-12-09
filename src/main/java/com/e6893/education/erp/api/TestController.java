@@ -23,6 +23,8 @@ public class TestController {
 
 	@Autowired
 	NlpService nlpService;
+	
+	
 	/**
 	 * Simply selects the home view to render by returning its name.
 	 */
