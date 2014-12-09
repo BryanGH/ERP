@@ -3,13 +3,13 @@ package com.e6893.education.erp.dao;
 import com.e6893.education.erp.entity.User;
 
 public interface UserDao {
-	public User getUserById(long userId);
+	public User getUserByUserName(String userName);
 	
-	public User getUserByEmail(String email);
+	public User createUser(User user);
 	
-	public int createUser(User user);
-	
-	public int updateUser(User user);
+	public User updateUser(User user);
 	
 	// public int deleteUser(long userId);
+	
+	
 }
