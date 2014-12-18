@@ -16,6 +16,22 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <param-name>contextConfigLocation</param-name>
         <param-value>classpath:spring/application-config.xml</param-value>
     </context-param>
+    
+    
+    
+	<filter>
+        <filter-name>CORS</filter-name>
+        <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
+
+        <init-param>
+                <param-name>cors.allowOrigin</param-name>
+                <param-value>*</param-value>
+        </init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>CORS</filter-name>
+		<servlet-name>dispatcherServlet</servlet-name>
+	</filter-mapping>
 
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

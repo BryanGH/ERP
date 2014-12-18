@@ -1,5 +1,7 @@
 package com.e6893.education.erp.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.template.Neo4jOperations;
 import org.springframework.stereotype.Service;
@@ -36,5 +38,13 @@ public class UserService {
 	public int addHistory(User user, Topic topic) {
 		
 		return userDaoImpl.addSearchedHistory(user, topic);	
+	}
+	
+	public List<User> recommendUsers(User user, Topic topic) {
+		return userDaoImpl.recommendUser(user, topic);
+	}
+	
+	public List<Topic> recommendTopics(Topic topic) {
+		return userDaoImpl.recommendTopic(topic);
 	}
 }

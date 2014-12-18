@@ -1,12 +1,15 @@
 package com.e6893.education.erp.dao.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.collection.IteratorUtil;
 import org.springframework.stereotype.Repository;
 
 import com.e6893.education.erp.dao.UserDao;
@@ -188,6 +191,116 @@ public class UserDaoImpl implements UserDao {
 		}
 	}
 	
+	public void updateTopicSimilarity() {
+		GraphDatabaseService db = DatabaseNeo4j.getDatabase();
+		ExecutionEngine engine = new ExecutionEngine( db );
+		try ( Transaction tx = db.beginTx(); )
+        {
+            engine.execute("MATCH (t1:Topic)<-[r1:Searched]-(u:User)-[r2:Searched]->(t2:Topic) "
+            		+ "WITH SQRT(SUM((r1.searchCount - r2.searchCount)^2)) AS ecdif, t1, t2 "
+            		+ "MERGE (t1)−[s:SIMILAR]−(t2) "
+            		+ "SET s.similarity = 1 / (1 + ecdif)");
+            engine.execute("MATCH (t1:Topic)<-[r1:Searched]-(u:User)-[r2:Searched]->(t2:Topic) WITH SQRT(SUM((r1.searchCount - r2.searchCount)^2)) AS ecdif, t1, t2 MERGE (t1)−[s:SIMILAR]−(t2) SET s.similarity = 1 / (1 + ecdif)");
+            
+            tx.success();
+        }
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		finally {
+			db.shutdown();
+		}
+	}
+	
+	public List<User> recommendUser(User user,Topic topic) {
+		// TODO Auto-generated method stub
+		GraphDatabaseService db = DatabaseNeo4j.getDatabase();
+		
+        ExecutionEngine engine = new ExecutionEngine( db );
+
+        ExecutionResult result;
+		try ( Transaction tx = db.beginTx(); )
+        {
+            result = engine.execute( "MATCH (u1:User)-[r1:Searched]->(t:Topic {topicName:\"" 
+            		+ topic.getTopicName() + "\"})<-[r:Searched]-(A:User {userName:\""
+            		+ user.getUserName() + "\"}) WITH u1, r1 ORDER BY r1.searchCount DESC RETURN u1 LIMIT 5");
+            Iterator<Node> n_column = result.columnAs( "u1" );
+            List<User> users =  new ArrayList<User>();
+            for ( Node node : IteratorUtil.asIterable( n_column ) )
+            {
+                // note: we're grabbing the name property from the node,
+                // not from the n.name in this case.
+            	User tmpUser = new User();
+            	tmpUser.setPwd(node.getProperty("pwd").toString());
+            	tmpUser.setUserName(node.getProperty("userName").toString());
+            	users.add(tmpUser);
+            }
+            tx.success();   
+            return users;
+        }
+		catch (Exception e) {
+			return null;
+		}
+		finally {
+			db.shutdown();
+		}
+	}
+	
+	public List<Topic> recommendTopic(Topic topic) {
+		// TODO Auto-generated method stub
+		GraphDatabaseService db = DatabaseNeo4j.getDatabase();
+		
+        ExecutionEngine engine = new ExecutionEngine( db );
+
+        ExecutionResult result;
+        
+        
+		try ( Transaction tx = db.beginTx(); )
+        {
+			result = engine.execute("MATCH (T:Topic {topicName:\"" 
+					+ topic.getTopicName() + "\"})-[s:SIMILAR]-(t1:Topic) "
+					+ "WITH t1, s.similarity AS Similarity "
+					+ "ORDER BY Similarity DESC "
+					+ "RETURN t1 LIMIT 4");
+            Iterator<Node> n_column = result.columnAs( "t1" );
+            List<Topic> topics =  new ArrayList<Topic>();
+            for ( Node node : IteratorUtil.asIterable( n_column ) )
+            {
+                // note: we're grabbing the name property from the node,
+                // not from the n.name in this case.
+            	Topic tmpTopic = new Topic();
+            	tmpTopic.setTopicName(node.getProperty("topicName").toString());
+            	topics.add(tmpTopic);
+            }
+            tx.success();   
+            return topics;
+        }
+		catch (Exception e) {
+			return null;
+		}
+		finally {
+			db.shutdown();
+		}
+	}
+	
+	public void main(String[] args) {
+		User user = new User();
+		user.setUserName("Sheldon");
+		user.setPwd("S");
+		
+		Topic topic = new Topic();
+		topic.setTopicName("calculus");
+		
+		List<User> users = recommendUser(user, topic);
+		List<Topic> topics = recommendTopic(topic);
+		for (User u: users) {
+			System.out.println(u.toString());
+		}
+		System.out.println("========================================================");
+		for (Topic t: topics) {
+			System.out.println(t);
+		}
+	}
 	
 	
 	

@@ -1,6 +1,7 @@
 package com.e6893.education.erp.api;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.e6893.education.erp.dao.impl.UserDaoImpl;
 import com.e6893.education.erp.entity.Topic;
 import com.e6893.education.erp.entity.User;
 import com.e6893.education.erp.services.NlpService;
@@ -33,6 +35,9 @@ public class UserController {
 
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	UserDaoImpl userDaoImpl;
 	/**
 	 * Simply selects the home view to render by returning its name.
 	 */
@@ -76,5 +81,26 @@ public class UserController {
 		}
 
 		return responseBody;
+	}
+	
+	@RequestMapping(value = "/test", method = RequestMethod.GET)
+	public void test(HttpServletRequest request,
+			HttpServletResponse response, BindingResult result) {
+		User user = new User();
+		user.setUserName("Sheldon");
+		user.setPwd("S");
+		
+		Topic topic = new Topic();
+		topic.setTopicName("calculus");
+		
+		List<User> users = userDaoImpl.recommendUser(user, topic);
+		List<Topic> topics = userDaoImpl.recommendTopic(topic);
+		for (User u: users) {
+			System.out.println(u.toString());
+		}
+		System.out.println("========================================================");
+		for (Topic t: topics) {
+			System.out.println(t);
+		}
 	}
 }
