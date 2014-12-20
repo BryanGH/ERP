@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.e6893.education.erp.dao.impl.TopicDaoImpl;
 import com.e6893.education.erp.dao.impl.UserDaoImpl;
 import com.e6893.education.erp.entity.Topic;
 import com.e6893.education.erp.entity.User;
@@ -38,6 +39,10 @@ public class UserController {
 	
 	@Autowired
 	UserDaoImpl userDaoImpl;
+	
+	@Autowired
+	TopicDaoImpl topicDaoImpl;
+	
 	/**
 	 * Simply selects the home view to render by returning its name.
 	 */
@@ -83,15 +88,29 @@ public class UserController {
 		return responseBody;
 	}
 	
-	@RequestMapping(value = "/test", method = RequestMethod.GET)
-	public void test(HttpServletRequest request,
-			HttpServletResponse response, BindingResult result) {
+	@RequestMapping(value = "/recommend", method = RequestMethod.GET)
+	public @ResponseBody Map<String, Object> recommend(HttpServletRequest request,
+			HttpServletResponse response) {
+		
+		Map<String, Object> responseBody = new HashMap<String, Object>();
+		
 		User user = new User();
 		user.setUserName("Sheldon");
 		user.setPwd("S");
 		
+		User user2 = new User();
+		user2.setUserName("Huan");
+		user2.setPwd("gao");
+		
 		Topic topic = new Topic();
 		topic.setTopicName("calculus");
+		
+		userDaoImpl.createUser(user2);
+		userDaoImpl.createUser(user);
+		topicDaoImpl.createTopic(topic);
+		
+		userDaoImpl.addSearchedHistory(user2, topic);
+		userDaoImpl.addSearchedHistory(user, topic);
 		
 		List<User> users = userDaoImpl.recommendUser(user, topic);
 		List<Topic> topics = userDaoImpl.recommendTopic(topic);
@@ -102,5 +121,10 @@ public class UserController {
 		for (Topic t: topics) {
 			System.out.println(t);
 		}
+		
+		responseBody.put("recommendedUsers", users);
+		responseBody.put("recommendedTopics", topics);
+		
+		return responseBody;
 	}
 }
